@@ -1,30 +1,12 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "lexer.h"
 
-// Token types
-typedef enum {
-    TOKEN_INT,
-    TOKEN_MAIN,
-    TOKEN_VOID,
-    TOKEN_RETURN,
-    TOKEN_LPAREN,
-    TOKEN_RPAREN,
-    TOKEN_LBRACE,
-    TOKEN_RBRACE,
-    TOKEN_SEMICOLON,
-    TOKEN_NUMBER,
-    TOKEN_EOF
-} TokenType;
-
-// Token structure
-typedef struct {
-    TokenType type;
-    char *value;
-} Token;
-
-// Simple lexer function
+// Lexer function - converts input string to a single token
 Token* lex(char **input) {
     // Skip whitespace
     while (**input && isspace(**input)) {
@@ -116,40 +98,49 @@ Token* lex(char **input) {
     exit(1);
 }
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <source.c>\n", argv[0]);
-        return 1;
-    }
-    
-    // Read the source file
-    FILE *file = fopen(argv[1], "r");
-    if (!file) {
-        fprintf(stderr, "Error: cannot open file %s\n", argv[1]);
-        return 1;
-    }
-    
-    fseek(file, 0, SEEK_END);
-    long length = ftell(file);
-    fseek(file, 0, SEEK_SET);
-    
-    char *source = malloc(length + 1);
-    fread(source, 1, length, file);
-    source[length] = '\0';
-    fclose(file);
-    
-    // Lex the source
+// Helper function to tokenize entire source into array
+Token** tokenize(char *source, int *token_count) {
     char *input = source;
     Token *token;
+    int count = 0;
+    int capacity = 100;
+    Token **tokens = malloc(sizeof(Token*) * capacity);
     
-    while ((token = lex(&input))->type != TOKEN_EOF) {
-        printf("Token: type=%d, value='%s'\n", token->type, token->value);
-        free(token->value);
-        free(token);
+    while (1) {
+        token = lex(&input);
+        tokens[count++] = token;
+        
+        if (token->type == TOKEN_EOF) {
+            break;
+        }
+        
+        if (count >= capacity) {
+            capacity *= 2;
+            tokens = realloc(tokens, sizeof(Token*) * capacity);
+        }
     }
     
-    free(token);
-    free(source);
-    
-    return 0;
+    *token_count = count;
+    return tokens;
+}
+
+// Helper function to print tokens (for debugging)
+void print_tokens(Token **tokens, int count) {
+    printf("=== Tokens ===\n");
+    for (int i = 0; i < count; i++) {
+        printf("Token: type=%d, value='%s'\n", 
+               tokens[i]->type, 
+               tokens[i]->value ? tokens[i]->value : "NULL");
+    }
+}
+
+// Helper function to free tokens
+void free_tokens(Token **tokens, int count) {
+    for (int i = 0; i < count; i++) {
+        if (tokens[i]->value) {
+            free(tokens[i]->value);
+        }
+        free(tokens[i]);
+    }
+    free(tokens);
 }
