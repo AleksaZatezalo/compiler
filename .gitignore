@@ -19,15 +19,25 @@
 *.la
 *.lo
 
-# Executables
+# Executables (built programs)
 *.exe
 *.out
 *.app
 *.i*86
 *.x86_64
 *.hex
-parser
 a.out
+
+# Built compiler programs
+compiler
+parser
+
+# Test executables
+test
+test_*
+final_test
+hello
+return_2
 
 # Assembly output files
 *.s
