@@ -11,10 +11,10 @@ echo "Running Parser Tests"
 echo "======================================"
 echo ""
 
-# Check if parser exists
-if [ ! -f "./parser" ]; then
-    echo -e "${RED}Error: parser executable not found${NC}"
-    echo "Run 'make' first to build the parser"
+# Check if compiler exists
+if [ ! -f "./compiler" ]; then
+    echo -e "${RED}Error: compiler executable not found${NC}"
+    echo "Run 'make' first to build the compiler"
     exit 1
 fi
 
@@ -27,15 +27,23 @@ TOTAL=0
 run_test() {
     local test_file=$1
     local test_name=$(basename "$test_file" .c)
+    local output_file="${test_file%.c}.s"
     
     TOTAL=$((TOTAL + 1))
     
     echo -n "Testing $test_name ... "
     
-    # Run the parser on the test file
-    if ./parser "$test_file" > /dev/null 2>&1; then
-        echo -e "${GREEN}PASS${NC}"
-        PASSED=$((PASSED + 1))
+    # Run the compiler on the test file
+    if ./compiler "$test_file" "$output_file" > /dev/null 2>&1; then
+        # Check if assembly file was created
+        if [ -f "$output_file" ]; then
+            echo -e "${GREEN}PASS${NC}"
+            PASSED=$((PASSED + 1))
+            rm -f "$output_file"  # Clean up
+        else
+            echo -e "${RED}FAIL (no output)${NC}"
+            FAILED=$((FAILED + 1))
+        fi
     else
         echo -e "${RED}FAIL${NC}"
         FAILED=$((FAILED + 1))

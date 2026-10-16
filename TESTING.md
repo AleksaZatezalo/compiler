@@ -3,35 +3,43 @@
 ## Quick Start
 
 ```bash
-# Build and run all tests
+# Build the compiler
+make
+
+# Run all tests
 make test-all
 
-# Build and run with full output
-make test-verbose
-
-# Build and run single test
+# Run single test with output
 make test
+
+# Run all tests with full output
+make test-verbose
 ```
 
 ## Test Commands
 
 | Command | Description |
 |---------|-------------|
-| `make test` | Run single test with `return_2.c` |
-| `make test-all` | Run all tests in `tests/` directory |
-| `make test-verbose` | Run all tests showing full token/AST output |
+| `make test` | Compile `return_2.c` and show generated assembly |
+| `make test-all` | Compile all tests in `tests/` directory |
+| `make test-verbose` | Compile all tests showing full output |
 | `./run_tests.sh` | Run test script directly |
 
 ## Manual Testing
 
 ```bash
-# Build the parser
+# Build the compiler
 make
 
-# Test a specific file
-./parser tests/return_0.c
-./parser tests/return_42.c
-./parser return_2.c
+# Compile a specific file
+./compiler tests/return_0.c tests/return_0.s
+./compiler tests/return_42.c tests/return_42.s
+./compiler return_2.c return_2.s
+
+# Assemble and run to verify
+gcc tests/return_42.s -o test_42
+./test_42
+echo $?  # Should print 42
 ```
 
 ## Understanding Test Output
@@ -57,18 +65,22 @@ All tests passed!
 ```
 
 ### Verbose Output (test-verbose)
-Shows the full lexer and parser output:
+Shows the generated assembly code:
 ```
-=== Tokens ===
-Token: type=0, value='int'
-Token: type=1, value='main'
-...
+=== Compiling tests/return_42.c ===
+=== Generated Assembly ===
+    .section .text
+    .globl main
+main:
+    pushq   %rbp
+    movq    %rsp, %rbp
+    movl    $42, %eax
+    popq    %rbp
+    ret
+==========================
 
-=== AST ===
-Program
-  Function: main
-    Return Statement
-      Int Literal: 42
+Writing to file: tests/return_42.s
+Success! Assembly written to tests/return_42.s
 ```
 
 ## Adding New Tests
@@ -106,10 +118,15 @@ If a test fails:
 
 2. Run it directly to see errors:
    ```bash
-   ./parser tests/failing_test.c
+   ./compiler tests/failing_test.c tests/failing_test.s
    ```
 
-3. Check the parser output and error messages
+3. Check the compiler output and error messages
+
+4. Try assembling the output to see if it's valid:
+   ```bash
+   gcc tests/failing_test.s -o test_program
+   ```
 
 ## CI/CD Integration
 
