@@ -100,17 +100,36 @@ main:                       # Function label
 **Key Functions**:
 - `int assemble(const char *assembly_code, const char *output_file)` - Assembles to executable
 
-**How it works**:
-1. Writes assembly to temporary file (`/tmp/compiler_temp.s`)
-2. Forks a child process
-3. Executes `gcc` via `execlp()` to assemble and link
-4. Waits for completion
-5. Cleans up temporary file
-6. Returns 0 on success, -1 on error
+**How it works (WITHOUT using GCC)**:
+
+**Step 1: Assemble** with `as` (GNU assembler)
+1. Writes assembly to `/tmp/compiler_temp.s`
+2. Forks and executes: `as /tmp/compiler_temp.s -o /tmp/compiler_temp.o`
+3. Creates object file (`.o`)
+
+**Step 2: Link** with `ld` (GNU linker)
+1. Forks and executes: `ld` with arguments:
+   - `-dynamic-linker /lib64/ld-linux-x86-64.so.2` - Runtime linker
+   - `/usr/lib/x86_64-linux-gnu/crt1.o` - C runtime startup
+   - `/usr/lib/x86_64-linux-gnu/crti.o` - Constructor prologue
+   - `/tmp/compiler_temp.o` - Our compiled code
+   - `/usr/lib/x86_64-linux-gnu/crtn.o` - Constructor epilogue
+   - `-lc` - Link C standard library
+   - `-o a.out` - Output executable
+2. Creates final executable
+
+**Step 3: Cleanup**
+- Removes temporary `.s` and `.o` files
+
+**Why use `as`/`ld` instead of `gcc`**:
+- More control over linking process
+- Educational - shows what GCC does behind the scenes
+- No dependency on GCC for final assembly
+- Direct use of GNU binutils (as, ld)
 
 **Why use fork/exec instead of system()**:
-- Better error handling
-- More secure (no shell involved)
+- Better error handling (check exact exit codes)
+- More secure (no shell interpretation)
 - Direct process control
 - Proper architecture separation
 
@@ -131,8 +150,8 @@ main:                       # Function label
 
 **Usage**:
 ```bash
-./compiler input.c
-# Output: ./a.out
+./compiler <source> <dest>
+# Example: ./compiler input.c output
 ```
 
 ---

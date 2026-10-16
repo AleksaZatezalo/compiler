@@ -33,7 +33,7 @@ $(PARSER): $(PARSER_OBJECTS)
 # Run compiler on single test
 test: $(COMPILER)
 	@echo "Compiling return_2.c..."
-	@./$(COMPILER) return_2.c
+	@./$(COMPILER) return_2.c a.out
 	@echo ""
 	@echo "Running executable..."
 	@./a.out; echo "Exit code: $$?"
@@ -46,7 +46,7 @@ test-all: $(COMPILER)
 test-verbose: $(COMPILER)
 	@for test in tests/*.c; do \
 		echo "=== Compiling $$test ==="; \
-		./$(COMPILER) $$test; \
+		./$(COMPILER) $$test a.out; \
 		echo ""; \
 	done
 
@@ -73,5 +73,8 @@ help:
 	@echo "  distclean    - Remove all generated files"
 	@echo "  rebuild      - Clean and rebuild from scratch"
 	@echo "  help         - Show this help message"
+	@echo ""
+	@echo "Usage: ./compiler <source> <dest>"
+	@echo "Example: ./compiler return_2.c my_program"
 
 .PHONY: all test test-all test-verbose clean distclean rebuild help

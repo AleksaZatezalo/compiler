@@ -29,15 +29,14 @@ static char* read_file(const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <source.c>\n", argv[0]);
-        fprintf(stderr, "Example: %s return_2.c\n", argv[0]);
-        fprintf(stderr, "Output will be ./a.out\n");
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <source> <dest>\n", argv[0]);
+        fprintf(stderr, "Example: %s return_2.c a.out\n", argv[0]);
         return 1;
     }
     
     const char *input_file = argv[1];
-    const char *output_file = "./a.out";
+    const char *output_file = argv[2];
     
     // Read the source file
     char *source = read_file(input_file);

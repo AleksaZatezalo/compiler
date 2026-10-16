@@ -27,7 +27,7 @@ TOTAL=0
 run_test() {
     local test_file=$1
     local test_name=$(basename "$test_file" .c)
-    local output_file="${test_file%.c}.s"
+    local output_file="test_${test_name}"
     
     TOTAL=$((TOTAL + 1))
     
@@ -35,13 +35,13 @@ run_test() {
     
     # Run the compiler on the test file
     if ./compiler "$test_file" "$output_file" > /dev/null 2>&1; then
-        # Check if assembly file was created
+        # Check if executable was created
         if [ -f "$output_file" ]; then
             echo -e "${GREEN}PASS${NC}"
             PASSED=$((PASSED + 1))
             rm -f "$output_file"  # Clean up
         else
-            echo -e "${RED}FAIL (no output)${NC}"
+            echo -e "${RED}FAIL (no executable)${NC}"
             FAILED=$((FAILED + 1))
         fi
     else

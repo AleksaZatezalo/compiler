@@ -4,8 +4,7 @@
 
 ```bash
 make                                    # Build compiler
-./compiler test.c test.s                # Compile C → assembly
-gcc test.s -o test                      # Assemble → executable
+./compiler test.c test                  # Compile C → executable
 ./test && echo "Exit code: $?"          # Run
 ```
 
@@ -39,7 +38,7 @@ EOF
 ### 3. Compile It
 
 ```bash
-./compiler hello.c hello.s
+./compiler hello.c hello
 ```
 
 You'll see:
@@ -55,14 +54,15 @@ main:
     ret
 ==========================
 
-Writing to file: hello.s
-Success! Assembly written to hello.s
+Assembling to executable...
+
+✓ Success! Executable created: hello
+Run it with: hello
 ```
 
-### 4. Assemble and Run
+### 4. Run It
 
 ```bash
-gcc hello.s -o hello
 ./hello
 echo $?
 ```
@@ -120,12 +120,12 @@ All tests passed!
 ```bash
 # Return 0
 echo 'int main(void) { return 0; }' > zero.c
-./compiler zero.c zero.s && gcc zero.s -o zero && ./zero; echo $?
+./compiler zero.c zero && ./zero; echo $?
 # Output: 0
 
 # Return 255
 echo 'int main(void) { return 255; }' > max.c
-./compiler max.c max.s && gcc max.s -o max && ./max; echo $?
+./compiler max.c max && ./max; echo $?
 # Output: 255
 ```
 

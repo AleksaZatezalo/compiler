@@ -36,11 +36,14 @@ Our compiler generates executables directly!
 ### Simple Usage
 
 ```bash
-# Compile C to executable (creates ./a.out)
-./compiler return_2.c
+# Compile C to executable
+./compiler <source> <dest>
+
+# Example
+./compiler return_2.c my_program
 
 # Run the executable
-./a.out
+./my_program
 echo $?  # Check exit code (should be 2)
 ```
 
@@ -54,11 +57,11 @@ int main(void) {
 }
 EOF
 
-# Compile it
-./compiler test.c
+# Compile it (specify output name)
+./compiler test.c test
 
 # Run it
-./a.out
+./test
 echo $?  # Outputs: 42
 ```
 
@@ -143,6 +146,8 @@ The test suite will automatically find and run all `.c` files in the `tests/` di
 - **[USAGE.md](USAGE.md)** - Detailed usage guide and common mistakes
 - **[TESTING.md](TESTING.md)** - Testing guide and debugging tips
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - Technical design and internals
+- **[ASSEMBLER_EXPLAINED.md](ASSEMBLER_EXPLAINED.md)** - Deep dive into `as` and `ld`
+- **[TOOLCHAIN.md](TOOLCHAIN.md)** - Visual guide to the complete compilation process
 
 ## References
 
