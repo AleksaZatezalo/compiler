@@ -7,9 +7,9 @@ COMPILER = compiler
 PARSER = parser
 
 # Source files
-COMPILER_SOURCES = compiler.c lexer.c parser.c codegen.c
+COMPILER_SOURCES = compiler.c lexer.c parser.c codegen.c assembler.c
 PARSER_SOURCES = parser.c lexer.c
-HEADERS = lexer.h parser.h codegen.h
+HEADERS = lexer.h parser.h codegen.h assembler.h
 
 # Object files
 COMPILER_OBJECTS = $(COMPILER_SOURCES:.c=.o)
@@ -32,9 +32,11 @@ $(PARSER): $(PARSER_OBJECTS)
 
 # Run compiler on single test
 test: $(COMPILER)
-	./$(COMPILER) return_2.c return_2.s
+	@echo "Compiling return_2.c..."
+	@./$(COMPILER) return_2.c
 	@echo ""
-	@cat return_2.s
+	@echo "Running executable..."
+	@./a.out; echo "Exit code: $$?"
 
 # Run all tests in test suite
 test-all: $(COMPILER)
@@ -43,15 +45,14 @@ test-all: $(COMPILER)
 # Run tests with verbose output
 test-verbose: $(COMPILER)
 	@for test in tests/*.c; do \
-		output=$${test%.c}.s; \
 		echo "=== Compiling $$test ==="; \
-		./$(COMPILER) $$test $$output; \
+		./$(COMPILER) $$test; \
 		echo ""; \
 	done
 
 # Clean build artifacts
 clean:
-	rm -f $(COMPILER) $(PARSER) $(COMPILER_OBJECTS) *.s tests/*.s
+	rm -f $(COMPILER) $(PARSER) $(COMPILER_OBJECTS) *.s tests/*.s a.out
 
 # Clean everything including test outputs
 distclean: clean
@@ -65,10 +66,10 @@ help:
 	@echo "Available targets:"
 	@echo "  all          - Build the compiler (default)"
 	@echo "  parser       - Build standalone parser for testing"
-	@echo "  test         - Compile return_2.c and show assembly"
+	@echo "  test         - Compile and run return_2.c"
 	@echo "  test-all     - Run all tests in tests/"
 	@echo "  test-verbose - Run all tests with full output"
-	@echo "  clean        - Remove compiled files and assembly"
+	@echo "  clean        - Remove compiled files and executables"
 	@echo "  distclean    - Remove all generated files"
 	@echo "  rebuild      - Clean and rebuild from scratch"
 	@echo "  help         - Show this help message"

@@ -31,26 +31,35 @@ make help
 
 ## Usage
 
-**Important:** Our compiler generates assembly (`.s` files), not executables. You need GCC to create the final executable.
+Our compiler generates executables directly!
 
-### Complete Workflow
+### Simple Usage
 
 ```bash
-# Step 1: Compile C to assembly (our compiler)
-./compiler return_2.c return_2.s
+# Compile C to executable (creates ./a.out)
+./compiler return_2.c
 
-# Step 2: Assemble to executable (using GCC)
-gcc return_2.s -o return_2
-
-# Step 3: Run the executable
-./return_2
+# Run the executable
+./a.out
 echo $?  # Check exit code (should be 2)
 ```
 
-### One-Liner
+### Complete Example
 
 ```bash
-./compiler test.c test.s && gcc test.s -o test && ./test && echo "Exit: $?"
+# Create a test program
+cat > test.c << 'EOF'
+int main(void) {
+    return 42;
+}
+EOF
+
+# Compile it
+./compiler test.c
+
+# Run it
+./a.out
+echo $?  # Outputs: 42
 ```
 
 ### Standalone Parser (for debugging)
@@ -61,20 +70,7 @@ make parser
 ./parser return_2.c
 ```
 
-### ⚠️ Common Mistake
-
-```bash
-# WRONG: Don't do this
-./compiler return_2.c hello
-./hello  # ERROR! "hello" is assembly, not executable
-
-# RIGHT: Use .s extension and assemble first
-./compiler return_2.c hello.s
-gcc hello.s -o hello
-./hello  # Now it works!
-```
-
-See [USAGE.md](USAGE.md) for detailed examples.
+See [QUICKSTART.md](QUICKSTART.md) and [USAGE.md](USAGE.md) for more examples.
 
 ## Project Structure
 
@@ -86,6 +82,8 @@ compiler/
 ├── parser.c        # Parser implementation (AST building)
 ├── codegen.h       # Code generator declarations
 ├── codegen.c       # Code generator (x86-64 assembly)
+├── assembler.h     # Assembler declarations
+├── assembler.c     # Assembler (assembly → executable)
 ├── compiler.c      # Main compiler program
 ├── Makefile        # Build system
 ├── tests/          # Test cases

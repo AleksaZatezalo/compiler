@@ -2,11 +2,13 @@
 
 ## Overview
 
-This is a three-stage compiler that translates C source code to x86-64 assembly:
+This is a four-stage compiler that translates C source code to executable binaries:
 
 ```
-Source Code (.c) → Lexer → Tokens → Parser → AST → Code Generator → Assembly (.s)
+Source Code (.c) → Lexer → Tokens → Parser → AST → Code Generator → Assembly → Assembler → Executable
 ```
+
+The compiler outputs executables directly (default: `a.out`).
 
 ## Components
 
@@ -91,7 +93,30 @@ main:                       # Function label
 
 ---
 
-### 4. Main Compiler (`compiler.c`)
+### 4. Assembler (`assembler.h`, `assembler.c`)
+
+**Purpose**: Converts assembly code to executable binary
+
+**Key Functions**:
+- `int assemble(const char *assembly_code, const char *output_file)` - Assembles to executable
+
+**How it works**:
+1. Writes assembly to temporary file (`/tmp/compiler_temp.s`)
+2. Forks a child process
+3. Executes `gcc` via `execlp()` to assemble and link
+4. Waits for completion
+5. Cleans up temporary file
+6. Returns 0 on success, -1 on error
+
+**Why use fork/exec instead of system()**:
+- Better error handling
+- More secure (no shell involved)
+- Direct process control
+- Proper architecture separation
+
+---
+
+### 5. Main Compiler (`compiler.c`)
 
 **Purpose**: Orchestrates the entire compilation pipeline
 
@@ -101,12 +126,13 @@ main:                       # Function label
 3. Parsing → AST
 4. Code generation → assembly string
 5. Print assembly to stdout
-6. Write assembly to file
+6. Assemble to executable → a.out
 7. Clean up memory
 
 **Usage**:
 ```bash
-./compiler input.c output.s
+./compiler input.c
+# Output: ./a.out
 ```
 
 ---
@@ -128,10 +154,11 @@ main:                       # Function label
 ### Build Process
 
 ```
-lexer.c  → (compile) → lexer.o  ┐
-parser.c → (compile) → parser.o ├→ (link) → compiler
-codegen.c → (compile) → codegen.o┘
-compiler.c → (compile) → compiler.o
+lexer.c     → (compile) → lexer.o     ┐
+parser.c    → (compile) → parser.o    │
+codegen.c   → (compile) → codegen.o   ├→ (link) → compiler
+assembler.c → (compile) → assembler.o │
+compiler.c  → (compile) → compiler.o  ┘
 ```
 
 ---
@@ -180,10 +207,10 @@ main:
     ret
 ```
 
-### Stage 4: Assemble and Link
+### Stage 4: Assembler Output
 ```bash
-gcc return_2.s -o return_2
-./return_2
+# Assembler automatically creates executable
+./a.out
 echo $?  # Outputs: 2
 ```
 

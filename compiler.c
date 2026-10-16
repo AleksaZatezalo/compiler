@@ -6,6 +6,7 @@
 #include "lexer.h"
 #include "parser.h"
 #include "codegen.h"
+#include "assembler.h"
 
 // Read source file into string
 static char* read_file(const char *filename) {
@@ -28,13 +29,15 @@ static char* read_file(const char *filename) {
 }
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        fprintf(stderr, "Usage: %s <source.c> <output.s>\n", argv[0]);
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <source.c>\n", argv[0]);
+        fprintf(stderr, "Example: %s return_2.c\n", argv[0]);
+        fprintf(stderr, "Output will be ./a.out\n");
         return 1;
     }
     
     const char *input_file = argv[1];
-    const char *output_file = argv[2];
+    const char *output_file = "./a.out";
     
     // Read the source file
     char *source = read_file(input_file);
@@ -53,12 +56,22 @@ int main(int argc, char *argv[]) {
     printf("=== Generated Assembly ===\n");
     printf("%s", assembly);
     printf("==========================\n\n");
-    printf("Writing to file: %s\n", output_file);
     
-    // Write to file
-    write_assembly(assembly, output_file);
+    // Assemble to executable
+    printf("Assembling to executable...\n");
+    int result = assemble(assembly, output_file);
     
-    printf("Success! Assembly written to %s\n", output_file);
+    if (result == 0) {
+        printf("\n✓ Success! Executable created: %s\n", output_file);
+        printf("Run it with: %s\n", output_file);
+    } else {
+        fprintf(stderr, "\n✗ Error: Failed to assemble\n");
+        free(assembly);
+        free_ast(ast);
+        free_tokens(tokens, token_count);
+        free(source);
+        return 1;
+    }
     
     // Cleanup
     free(assembly);
