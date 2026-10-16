@@ -19,42 +19,77 @@ The compiler is being built incrementally with support for:
 ## Building
 
 ```bash
-# Build instructions will be added as the project develops
+# Build the parser
 make
+
+# Clean and rebuild
+make rebuild
+
+# See all available commands
+make help
 ```
 
 ## Usage
 
 ```bash
-# Compile a C source file
-./compiler <input.c> -o <output>
+# Parse a C source file
+./parser <input.c>
+
+# Example
+./parser return_2.c
 ```
 
 ## Project Structure
 
 ```
 compiler/
-├── src/           # Source code
-├── tests/         # Test cases
-└── examples/      # Example C programs
+├── lexer.h         # Lexer declarations
+├── lexer.c         # Lexer implementation
+├── parser.c        # Parser and main program
+├── Makefile        # Build system
+├── tests/          # Test cases
+│   ├── return_0.c
+│   ├── return_42.c
+│   └── return_100.c
+├── return_2.c      # Example test file
+└── README.md       # This file
 ```
 
-## Progress
+## Current Status
 
-This compiler is being developed chapter-by-chapter following the book. Feature support is added incrementally as each chapter is completed.
+### ✅ Completed
+- **Lexical Analysis** - Tokenizes C source code
+- **Syntax Analysis** - Builds Abstract Syntax Tree (AST)
+- **Test Suite** - Automated testing framework
+
+### ⏳ In Progress
+- Code generation (next step)
+
+### 📋 Planned
+- Semantic analysis
+- Optimization
+- Full C language support
 
 ## Requirements
 
-- A C compiler (GCC or Clang) for bootstrapping
+- GCC or Clang (for building the parser itself)
 - GNU Make
-- x86-64 Linux or macOS system for assembly output
+- Linux, macOS, or WSL
 
 ## Testing
 
 ```bash
-# Test suite will be added as development progresses
+# Run single test
 make test
+
+# Run all tests
+make test-all
+
+# Run all tests with verbose output (shows tokens and AST)
+make test-verbose
 ```
+
+The test suite will automatically find and run all `.c` files in the `tests/` directory.
 
 ## References
 

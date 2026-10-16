@@ -21,9 +21,21 @@ $(TARGET): $(OBJECTS)
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Run tests
+# Run single test
 test: $(TARGET)
 	./$(TARGET) return_2.c
+
+# Run all tests in test suite
+test-all: $(TARGET)
+	@./run_tests.sh
+
+# Run tests with verbose output
+test-verbose: $(TARGET)
+	@for test in tests/*.c; do \
+		echo "=== Testing $$test ==="; \
+		./$(TARGET) $$test; \
+		echo ""; \
+	done
 
 # Clean build artifacts
 clean:
@@ -39,11 +51,13 @@ rebuild: clean all
 # Show help
 help:
 	@echo "Available targets:"
-	@echo "  all       - Build the parser (default)"
-	@echo "  test      - Build and run test with return_2.c"
-	@echo "  clean     - Remove compiled files"
-	@echo "  distclean - Remove all generated files"
-	@echo "  rebuild   - Clean and rebuild from scratch"
-	@echo "  help      - Show this help message"
+	@echo "  all          - Build the parser (default)"
+	@echo "  test         - Build and run single test (return_2.c)"
+	@echo "  test-all     - Build and run all tests in tests/"
+	@echo "  test-verbose - Build and run all tests with full output"
+	@echo "  clean        - Remove compiled files"
+	@echo "  distclean    - Remove all generated files"
+	@echo "  rebuild      - Clean and rebuild from scratch"
+	@echo "  help         - Show this help message"
 
-.PHONY: all test clean distclean rebuild help
+.PHONY: all test test-all test-verbose clean distclean rebuild help
