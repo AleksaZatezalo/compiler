@@ -26,7 +26,7 @@
 *.i*86
 *.x86_64
 *.hex
-compiler
+parser
 a.out
 
 # Assembly output files
@@ -58,7 +58,6 @@ out/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
-Makefile
 *.cmake
 !CMakeLists.txt
 

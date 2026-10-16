@@ -1,28 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-
-// Token types
-typedef enum {
-    TOKEN_INT,
-    TOKEN_MAIN,
-    TOKEN_VOID,
-    TOKEN_RETURN,
-    TOKEN_LPAREN,
-    TOKEN_RPAREN,
-    TOKEN_LBRACE,
-    TOKEN_RBRACE,
-    TOKEN_SEMICOLON,
-    TOKEN_NUMBER,
-    TOKEN_EOF
-} TokenType;
-
-// Token structure
-typedef struct {
-    TokenType type;
-    char *value;
-} Token;
+#include "lexer.h"
 
 // AST Node Types
 typedef enum {
@@ -65,99 +46,6 @@ struct ASTNode {
 // Global token list and current position
 Token **tokens;
 int current_token = 0;
-
-// ===== LEXER FUNCTIONS =====
-
-Token* lex(char **input) {
-    // Skip whitespace
-    while (**input && isspace(**input)) {
-        (*input)++;
-    }
-    
-    // Check for end of input
-    if (**input == '\0') {
-        Token *token = malloc(sizeof(Token));
-        token->type = TOKEN_EOF;
-        token->value = NULL;
-        return token;
-    }
-    
-    Token *token = malloc(sizeof(Token));
-    
-    // Single character tokens
-    if (**input == '(') {
-        token->type = TOKEN_LPAREN;
-        token->value = strdup("(");
-        (*input)++;
-        return token;
-    }
-    if (**input == ')') {
-        token->type = TOKEN_RPAREN;
-        token->value = strdup(")");
-        (*input)++;
-        return token;
-    }
-    if (**input == '{') {
-        token->type = TOKEN_LBRACE;
-        token->value = strdup("{");
-        (*input)++;
-        return token;
-    }
-    if (**input == '}') {
-        token->type = TOKEN_RBRACE;
-        token->value = strdup("}");
-        (*input)++;
-        return token;
-    }
-    if (**input == ';') {
-        token->type = TOKEN_SEMICOLON;
-        token->value = strdup(";");
-        (*input)++;
-        return token;
-    }
-    
-    // Numbers
-    if (isdigit(**input)) {
-        int start = 0;
-        char buffer[256];
-        while (isdigit(**input)) {
-            buffer[start++] = **input;
-            (*input)++;
-        }
-        buffer[start] = '\0';
-        token->type = TOKEN_NUMBER;
-        token->value = strdup(buffer);
-        return token;
-    }
-    
-    // Keywords and identifiers
-    if (isalpha(**input)) {
-        int start = 0;
-        char buffer[256];
-        while (isalpha(**input)) {
-            buffer[start++] = **input;
-            (*input)++;
-        }
-        buffer[start] = '\0';
-        
-        // Check keywords
-        if (strcmp(buffer, "int") == 0) {
-            token->type = TOKEN_INT;
-        } else if (strcmp(buffer, "main") == 0) {
-            token->type = TOKEN_MAIN;
-        } else if (strcmp(buffer, "void") == 0) {
-            token->type = TOKEN_VOID;
-        } else if (strcmp(buffer, "return") == 0) {
-            token->type = TOKEN_RETURN;
-        }
-        token->value = strdup(buffer);
-        return token;
-    }
-    
-    // If we get here, unrecognized character
-    fprintf(stderr, "Error: unrecognized character '%c'\n", **input);
-    exit(1);
-}
 
 // ===== PARSER FUNCTIONS =====
 
@@ -270,19 +158,13 @@ void print_ast(ASTNode *node, int indent) {
     }
 }
 
-// ===== MAIN =====
+// ===== FILE READING =====
 
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <source.c>\n", argv[0]);
-        return 1;
-    }
-    
-    // Read the source file
-    FILE *file = fopen(argv[1], "r");
+char* read_file(const char *filename) {
+    FILE *file = fopen(filename, "r");
     if (!file) {
-        fprintf(stderr, "Error: cannot open file %s\n", argv[1]);
-        return 1;
+        fprintf(stderr, "Error: cannot open file %s\n", filename);
+        exit(1);
     }
     
     fseek(file, 0, SEEK_END);
@@ -294,32 +176,26 @@ int main(int argc, char *argv[]) {
     source[length] = '\0';
     fclose(file);
     
-    // Lex the source - collect all tokens
-    char *input = source;
-    Token *token;
+    return source;
+}
+
+// ===== MAIN =====
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <source.c>\n", argv[0]);
+        return 1;
+    }
+    
+    // Read the source file
+    char *source = read_file(argv[1]);
+    
+    // Tokenize the source
     int token_count = 0;
-    int token_capacity = 100;
-    tokens = malloc(sizeof(Token*) * token_capacity);
+    tokens = tokenize(source, &token_count);
     
-    while (1) {
-        token = lex(&input);
-        tokens[token_count++] = token;
-        
-        if (token->type == TOKEN_EOF) {
-            break;
-        }
-        
-        if (token_count >= token_capacity) {
-            token_capacity *= 2;
-            tokens = realloc(tokens, sizeof(Token*) * token_capacity);
-        }
-    }
-    
-    printf("=== Tokens ===\n");
-    for (int i = 0; i < token_count; i++) {
-        printf("Token: type=%d, value='%s'\n", tokens[i]->type, 
-               tokens[i]->value ? tokens[i]->value : "NULL");
-    }
+    // Print tokens (for debugging)
+    print_tokens(tokens, token_count);
     
     // Parse the tokens
     printf("\n=== AST ===\n");
@@ -327,6 +203,7 @@ int main(int argc, char *argv[]) {
     print_ast(ast, 0);
     
     // Cleanup
+    free_tokens(tokens, token_count);
     free(source);
     
     return 0;
