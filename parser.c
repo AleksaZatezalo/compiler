@@ -18,3 +18,26 @@ Formal Grammer:
 <exp> ::= <int>
 <int> ::= ? A constant token ?
 */
+
+/*Parsing Pseudocode*/
+parse_statment(tokens):
+    expect("return", tokens)
+    return_val = parse_exp(tokens)
+    expect(";", tokens)
+    return Return(return_val)
+
+expect(expected, tokens):
+    actual = take_token(tokens)
+    if actual != expected:
+        fail("Santax Error")
+
+/*Pretty printer*/
+It should have a pretty printer function that prints the AST in this way:
+Program(
+    Function(
+        name="main"
+        body=Return(
+            Constant(2)
+        )
+    )
+)
